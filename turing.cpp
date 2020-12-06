@@ -15,9 +15,10 @@ extern int optind;
 bool verbose = false;
 char turingfile[1024] = "\0";
 char w[1024] = "\0";
+int lw = 0;
 
 //temporary structure
-
+int printwidth[1000000];
 
 //build_turing
 class _turing
@@ -135,7 +136,7 @@ class _turing
 				if(i == 0)rightmost[i] = POS(strlen(w));
 				else rightmost[i] = TAPE_MIDDLE;
 			}
-			for(int i = 0; i < strlen(w); i++)
+			for(int i = 0; i < lw; i++)
 				tape[0][POS(i)] = w[i];
 			strcpy(curstate, q0);
 		}	
@@ -159,8 +160,81 @@ class _turing
 		}
 		void forward()
 		{
+			//test if the input is legal
+			for(int i = 0; i < lw; i++)
+			{
+				int j = 0;
+				for(j = 1; j <= numInChar; j++)
+				{
+					if(w[i] == inChar[j])break;
+				}
+				if(j > numInChar)
+				{
+					if(!verbose)fprintf(stderr, "illegal input\n");
+					else
+					{
+						fprintf(stderr, "Input: %s\n", w);
+						fprintf(stderr, "==================== ERR ====================\n");
+						fprintf(stderr, "error: '%c' was not declared in the set of input symbols\n", w[i]);
+						fprintf(stderr, "Input: %s\n", w);
+						for(int k = 1; k <= 7 + i; k++)
+							fprintf(stderr, " ");
+						fprintf(stderr, "^\n");
+						fprintf(stderr, "==================== END ====================\n");
+					}
+					exit(EXIT_FAILURE);
+				}
+			}
+
+
+			//start simulating
+			if(verbose)
+			{
+				printf("Input: %s\n", w);
+				printf("==================== RUN ====================\n");
+			}
+
+			int cnt = -1; 
 			while(!isHalt(curstate))
 			{
+				if(verbose)
+				{
+					cnt++;
+					printf("step   : %d\n", cnt);
+					for(int i = 0; i < numTape; i++)
+					{
+						int left = leftmost[i], right = rightmost[i];
+            while(left < right && left < head[i] && tape[i][left] == '_')left++;
+            while(left < right && right > head[i] && tape[i][right] == '_')right--;
+            right++;
+						printf("Index%d :", i);
+						w[left] = 0;
+						for(int j = left; j < right; j++)
+						{
+							w[j + 1] = printf(" %d", abs(j - TAPE_MIDDLE));
+						}
+						printf("\n");
+						printf("Tape%d  : ", i);
+						for(int j = left; j < right; j++)
+            {
+							for(int k = 1; k < w[j]; k++)
+								printf(" ");
+            	printf("%c", tape[i][j]);
+            }
+						printf("\n");
+						printf("Head%d  : ", i);
+						for(int j = left + 1; j <= head[i]; j++)
+						{
+							for(int k = 1; k <= w[j]; k++)
+								printf(" ");
+						}
+						printf("^\n");
+					}
+					printf("state  : %s\n", curstate);
+					printf("---------------------------------------------\n");
+
+				}
+
 				for(int i = 0; i < numTape; i++)
 					curtape[i] = tape[i][head[i]];
 				curtape[numTape] = '\0';
@@ -193,11 +267,13 @@ class _turing
 			while(left < right && tape[0][left] == '_')left++;
 			while(left < right && tape[0][right] == '_')right--;
 			right++;
+			if(verbose)printf("Result: ");
 			for(int i = left; i < right; i++)
 			{
 				printf("%c", tape[0][i]);
 			}
 			printf("\n");
+			if(verbose)printf("==================== END ====================\n");
 		}
 
 };
@@ -222,6 +298,7 @@ void parse_args(int argc, char *argv[])
 	}
 	sprintf(turingfile, "%s", argv[optind]);
 	sprintf(w, "%s", argv[optind + 1]);
+	lw = strlen(w);
 }
 int main(int argc, char *argv[])
 {
