@@ -50,9 +50,15 @@ class _turing
 		char *trans[MAX_NUM_TRANS][5];
 
 #define TAPE_MIDDLE 10000
+#define MAX_LEN_TAPE (2 * TAPE_MIDDLE)
+#define MAX_NUM_TAPE 64
 		int numTape = 0;
-		char tape[64][2 * TAPE_MIDDLE];
-		int head[64];
+		char tape[MAX_NUM_TAPE][MAX_LEN_TAPE];
+		int head[MAX_NUM_TAPE], leftmost[MAX_NUM_TAPE], rightmost[MAX_NUM_TAPE];
+
+		char curstate[1024];
+		char curtape[MAX_NUM_TAPE];
+#define POS(idx) (idx + TAPE_MIDDLE)
 
 		void extractToken(int *tot, char *ss[], char *s, char *buf, bool isString)
     {
@@ -118,6 +124,20 @@ class _turing
 				}
 			}
 			fclose(fp);
+
+			for(int i = 0; i < numTape; i++)
+      	for(int j = 0; j < MAX_LEN_TAPE; j++)
+      		tape[i][j] = '_';
+      for(int i = 0; i < numTape; i++)
+			{
+      	head[i] = TAPE_MIDDLE;
+				leftmost[i] = TAPE_MIDDLE;
+				if(i == 0)rightmost[i] = POS(strlen(w));
+				else rightmost[i] = TAPE_MIDDLE;
+			}
+			for(int i = 0; i < strlen(w); i++)
+				tape[0][POS(i)] = w[i];
+			strcpy(curstate, q0);
 		}	
 		~_turing()
 		{
@@ -129,7 +149,56 @@ class _turing
       	for(int j = 0; j <= 4; j++)
       		free(trans[i][j]);
 		}
-		
+		bool isHalt(char *s)
+		{
+			for(int i = 1; i <= numAccept; i++)
+			{
+				if(strcmp(s, accept[i]) == 0)return true;
+			}
+			return false;
+		}
+		void forward()
+		{
+			while(!isHalt(curstate))
+			{
+				for(int i = 0; i < numTape; i++)
+					curtape[i] = tape[i][head[i]];
+				curtape[numTape] = '\0';
+				int k = 0;
+				for(k = 1; k <= numTrans; k++)
+				{
+					if(strcmp(curstate, trans[k][0]) == 0 && strcmp(curtape, trans[k][1]) == 0)
+					{
+						for(int j = 0; j < numTape; j++)
+						{
+							tape[j][head[j]] = trans[k][2][j];
+							if(trans[k][3][j] == 'l')
+							{
+								head[j]--;
+								if(head[j] < leftmost[j])leftmost[j] = head[j];
+							}
+							else if(trans[k][3][j] == 'r')
+							{
+								head[j]++;
+								if(head[j] > rightmost[j])rightmost[j] = head[j];
+							}
+						}
+						strcpy(curstate, trans[k][4]);
+						break;
+					}
+				}
+				if(k > numTrans)break;
+			}	
+			int left = leftmost[0], right = rightmost[0];
+			while(left < right && tape[0][left] == '_')left++;
+			while(left < right && tape[0][right] == '_')right--;
+			right++;
+			for(int i = left; i < right; i++)
+			{
+				printf("%c", tape[0][i]);
+			}
+			printf("\n");
+		}
 
 };
 
@@ -158,6 +227,9 @@ int main(int argc, char *argv[])
 {
 	parse_args(argc, argv);
 	_turing TM;
+
+	TM.forward();
+	/*
 	for(int i = 1; i <= TM.numState; i++)
 		printf("%s ", TM.state[i]);
 	printf("\n\n");
@@ -182,6 +254,6 @@ int main(int argc, char *argv[])
 		for(int j = 0; j <= 4; j++)
 			printf("%s ", TM.trans[i][j]);
 		printf("\n");
-	}
+	}*/
 	return 0;
 }
