@@ -14,23 +14,20 @@ struct option long_options[] =
 extern int optind;
 bool verbose = false;
 char turingfile[1024] = "\0";
-char w[1024] = "\0";
+char w[100000] = "\0";
 int lw = 0;
 
 //temporary structure
 int printwidth[1000000];
 
 //build_turing
-class _turing
-{
-	public:
-		char buf[10000];
+		char buf[100000];
 
 #define MAX_NUM_STATE 256	
 		int numState;
 		char *state[MAX_NUM_STATE];
 
-#define MAX_IN_CHAR 128
+#define MAX_IN_CHAR 256
 		int numInChar;
 		char inChar[MAX_IN_CHAR];
 
@@ -50,7 +47,7 @@ class _turing
 		int numTrans;
 		char *trans[MAX_NUM_TRANS][5];
 
-#define TAPE_MIDDLE 10000
+#define TAPE_MIDDLE 100000
 #define MAX_LEN_TAPE (2 * TAPE_MIDDLE)
 #define MAX_NUM_TAPE 64
 		int numTape = 0;
@@ -60,7 +57,9 @@ class _turing
 		char curstate[1024];
 		char curtape[MAX_NUM_TAPE];
 #define POS(idx) (idx + TAPE_MIDDLE)
-
+class _turing
+{
+	public:
 		void extractToken(int *tot, char *ss[], char *s, char *buf, bool isString)
     {
 			(*tot) = 0;
@@ -194,7 +193,6 @@ class _turing
 				}
 			}
 
-
 			//start simulating
 			if(verbose)
 			{
@@ -286,7 +284,6 @@ class _turing
 
 };
 
-
 void parse_args(int argc, char *argv[])
 {
 	int o = 0;
@@ -312,33 +309,6 @@ int main(int argc, char *argv[])
 {
 	parse_args(argc, argv);
 	_turing TM;
-
 	TM.forward();
-	/*
-	for(int i = 1; i <= TM.numState; i++)
-		printf("%s ", TM.state[i]);
-	printf("\n\n");
-	
-	for(int i = 1; i <= TM.numInChar; i++)
-		printf("%c ", TM.inChar[i]);
-	printf("\n\n");
-	
-	for(int i = 1; i <= TM.numTapeChar; i++)
-		printf("%c ", TM.tapeChar[i]);
-	printf("\n\n");
-	
-	for(int i = 1; i <= TM.numAccept; i++)
-  	printf("%s ", TM.accept[i]);
-  printf("\n\n");
-	
-	printf("%d %s %c", TM.numTape, TM.q0, TM.B);
-	printf("\n\n");
-
-	for(int i = 1; i <= TM.numTrans; i++)
-	{
-		for(int j = 0; j <= 4; j++)
-			printf("%s ", TM.trans[i][j]);
-		printf("\n");
-	}*/
 	return 0;
 }
