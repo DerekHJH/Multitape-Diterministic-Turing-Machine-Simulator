@@ -99,6 +99,14 @@ class _turing
 			while(!feof(fp))
 			{
 				fscanf(fp, "%[^\n]\n", buf);
+				for(int i = 0; buf[i] != '\0'; i++)
+				{
+					if(buf[i] == ';')
+					{
+						buf[i] = '\0';
+						break;
+					}
+				}
 				if(buf[0] == '#')
 				{
 					if(buf[1] == 'Q')extractToken(&numState, state, NULL, buf, true);
@@ -114,7 +122,7 @@ class _turing
 					numTrans++;
 				  char *c = strtok(buf, " ");
 					int cnt = -1;
-          while(c != NULL)
+          while(c != NULL && cnt < 4)
           {
 						cnt++;
 						trans[numTrans][cnt] = (char *)malloc(strlen(c) + 1);
