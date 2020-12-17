@@ -44,7 +44,9 @@ q2 ___ ___ *** reject
 
 ; State q3: start the loop of copying the '1's to the right of 'x' several times.
 q3 11_ 11_ *** q4
-q3 =1_ _1_ r*l q7
+q3 =1_ ___ r*l q7
+q3 x1_ x__ *** reject
+q3 _1_ ___ *** reject
 
 ; State q4: copying.
 q4 11_ 111 *lr q4
@@ -58,31 +60,27 @@ q5 1__ 1__ *l* q6
 q6 11_ _1_ r** q3
 
 ; State q7: compare '1's on tape 0 and tape 2.
-q7 111 _1_ r*l q7
-q7 _1_ _1_ *** accept
-q7 _11 _11 *** reject
-q7 =11 =11 *** reject
-q7 x11 x11 *** reject
-q7 11_ 11_ *** reject
-q7 =1_ =1_ *** reject
-q7 x1_ x1_ *** reject
+q7 1_1 ___ r*l q7
+q7 ___ ___ *** accept
+q7 __1 ___ *** reject
+q7 =_1 =__ *** reject
+q7 x_1 x__ *** reject
+q7 1__ 1__ *** reject
+q7 =__ =__ *** reject
+q7 x__ x__ *** reject
 
 ; State accept*: write 'true' on 1st tape
-accept _1_ t1_ r** accept2
-accept2 _1_ r1_ r** accept3
-accept3 _1_ u1_ r** accept4
-accept4 _1_ e1_ *** halt_accept
+accept ___ t__ r** accept2
+accept2 ___ r__ r** accept3
+accept3 ___ u__ r** accept4
+accept4 ___ e__ *** halt_accept
 
 ; State reject*: write 'false' on 1st tape
-reject _11 _1_ r*l reject
-reject =11 _1_ r*l reject
-reject x11 _1_ r*l reject
-reject 111 _1_ r*l reject
-reject =1_ _1_ r*l reject
-reject x1_ _1_ r*l reject
-reject 11_ _1_ r*l reject
-reject _1_ f1_ r** reject2
-reject2 _1_ a1_ r** reject3
-reject3 _1_ l1_ r** reject4
-reject4 _1_ s1_ r** reject5
-reject5 _1_ e1_ *** halt_reject
+reject =__ ___ r** reject
+reject x__ ___ r** reject
+reject 1__ ___ r** reject
+reject ___ f__ r** reject2
+reject2 ___ a__ r** reject3
+reject3 ___ l__ r** reject4
+reject4 ___ s__ r** reject5
+reject5 ___ e__ *** halt_reject
